@@ -2,22 +2,16 @@
 Print data queries
 """
 
-import logging
 from sqlalchemy import func, select, desc
 from db_models import Group, Teacher, Student, Subject, Mark
-from connect import Session
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-)
+from logger_config import logger
 
 
 def log_seperator() -> None:
     """
     Print a log seperator
     """
-    logging.info("#" * 80)
+    logger.info("#" * 80)
 
 
 def select_1(session) -> None:
@@ -26,7 +20,7 @@ def select_1(session) -> None:
     """
 
     log_seperator()
-    logging.info("Query 1: 5 students with the highest average mark")
+    logger.info("Query 1: 5 students with the highest average mark")
     top_students_query = (
         select(
             Student.id,
@@ -41,7 +35,7 @@ def select_1(session) -> None:
     )
     top_students = session.execute(top_students_query).all()
     for student in top_students:
-        logging.info(
+        logger.info(
             "{:<15} {:<15} | {:.2f} |".format(
                 student.name, student.surname, student.average_mark
             )
@@ -54,7 +48,7 @@ def select_2(session) -> None:
     """
 
     log_seperator()
-    logging.info("Query 2: students with the highest average mark for each subject")
+    logger.info("Query 2: students with the highest average mark for each subject")
     subquery = (
         select(
             Mark.subject_id,
@@ -82,7 +76,7 @@ def select_2(session) -> None:
     )
     top_students = session.execute(top_students_query).all()
     for student in top_students:
-        logging.info(
+        logger.info(
             "{:<15} {:<15} | {:.2f} | {:<12} |".format(
                 student.student_name,
                 student.student_surname,
@@ -98,7 +92,7 @@ def select_3(session) -> None:
     """
 
     log_seperator()
-    logging.info("Query 3: Found average mark on groups for each subject")
+    logger.info("Query 3: Found average mark on groups for each subject")
     average_marks_query = (
         select(
             Group.name.label("group_name"),
@@ -113,7 +107,7 @@ def select_3(session) -> None:
 
     average_mark = session.execute(average_marks_query).all()
     for mark in average_mark:
-        logging.info(
+        logger.info(
             "{:<15} {:<15} | {:.2f} |".format(
                 mark.group_name, mark.subject_name, mark.average_mark
             )
@@ -126,12 +120,12 @@ def select_4(session) -> None:
     """
 
     log_seperator()
-    logging.info("Query 4: Avarege mark")
+    logger.info("Query 4: Avarege mark")
     average_marks_query = select(func.avg(Mark.mark).label("average_mark"))
 
     average_mark = session.execute(average_marks_query).all()
     for mark in average_mark:
-        logging.info("Avarege mark: {:.2f}".format(mark.average_mark))
+        logger.info("Avarege mark: {:.2f}".format(mark.average_mark))
 
 
 def select_5(session) -> None:
@@ -140,7 +134,7 @@ def select_5(session) -> None:
     """
 
     log_seperator()
-    logging.info("Query 5: Each teachers subjects")
+    logger.info("Query 5: Each teachers subjects")
     teachers_query = (
         select(
             Teacher.name.label("teacher_name"),
@@ -153,7 +147,7 @@ def select_5(session) -> None:
 
     teachers = session.execute(teachers_query).all()
     for teacher in teachers:
-        logging.info(
+        logger.info(
             "{:<15} {:<15} | {:<15} |".format(
                 teacher.teacher_name, teacher.teacher_surname, teacher.subject_name
             )
@@ -166,16 +160,16 @@ def select_6(session, group_id: int) -> None:
     """
 
     log_seperator()
-    logging.info("Query 6: List students from given group")
+    logger.info("Query 6: List students from given group")
     students_query = select(
         Student.name.label("student_name"),
         Student.surname.label("student_surname"),
     ).filter(Student.group_id == group_id)
 
     students = session.execute(students_query).all()
-    logging.info("Group id: %s", group_id)
+    logger.info("Group id: %s", group_id)
     for student in students:
-        logging.info(
+        logger.info(
             "{:<15} {:<15}".format(student.student_name, student.student_surname)
         )
 
@@ -186,7 +180,11 @@ def select_7(session, group_id: int, subject: str) -> None:
     """
 
     log_seperator()
-    logging.info("Query 7: List students marks from given group and subject")
+    logger.info(
+        "Query 7: List students marks from given group id %s and subject: %s",
+        group_id,
+        subject,
+    )
     students_query = (
         (
             select(
@@ -203,10 +201,10 @@ def select_7(session, group_id: int, subject: str) -> None:
     )
 
     students = session.execute(students_query).all()
-    logging.info("Group id: %s", group_id)
-    logging.info("Subject: %s", subject)
+    logger.info("Group id: %s", group_id)
+    logger.info("Subject: %s", subject)
     for student in students:
-        logging.info(
+        logger.info(
             "{:<15} {:<15} | {:<15} | {:<15}".format(
                 student.student_name,
                 student.student_surname,
@@ -222,7 +220,7 @@ def select_8(session) -> None:
     """
 
     log_seperator()
-    logging.info("Query 8: Average mark by each teacher")
+    logger.info("Query 8: Average mark by each teacher")
     select_query = (
         select(
             Teacher.name.label("teacher_name"),
@@ -236,7 +234,7 @@ def select_8(session) -> None:
 
     teachers = session.execute(select_query).all()
     for teacher in teachers:
-        logging.info(
+        logger.info(
             "{:<15} {:<15} | {:.2f} |".format(
                 teacher.teacher_name, teacher.teacher_surname, teacher.average_mark
             )
@@ -247,7 +245,7 @@ def select_9(session, student_id: int) -> None:
     """
     Given student subject list
     """
-    logging.info("Query 9: Given student subject list")
+    logger.info("Query 9: Given student %s subject list", student_id)
 
     log_seperator()
     select_query = (
@@ -264,7 +262,7 @@ def select_9(session, student_id: int) -> None:
 
     students = session.execute(select_query).all()
     for student in students:
-        logging.info(
+        logger.info(
             "{:<15} {:<15} | {:<15}".format(
                 student.student_name, student.student_surname, student.subject_name
             )
@@ -275,7 +273,11 @@ def select_10(session, student_id: int, teacher_id: int) -> None:
     """
     Given student subject list by teacher
     """
-    logging.info("Query 10: Given student subject list by teacher")
+    logger.info(
+        "Query 10: Given student id %s subject list by teacher id %s",
+        student_id,
+        teacher_id,
+    )
 
     log_seperator()
     select_query = (
@@ -298,7 +300,7 @@ def select_10(session, student_id: int, teacher_id: int) -> None:
 
     responce = session.execute(select_query).all()
     for i in responce:
-        logging.info(
+        logger.info(
             "Subject: {:<10} | Student: {:<15} {} | Teacher: {:<15} {:<15}".format(
                 i.subject_name,
                 i.student_name,
