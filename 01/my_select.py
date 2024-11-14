@@ -5,7 +5,7 @@ Print data queries
 import logging
 from sqlalchemy import func, select, desc
 from db_models import Group, Teacher, Student, Subject, Mark
-from connect import Session, session
+from connect import Session
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,7 +20,7 @@ def log_seperator() -> None:
     logging.info("#" * 80)
 
 
-def select_1(session: Session) -> None:
+def select_1(session) -> None:
     """
     Query 1: 5 students with the highest average mark
     """
@@ -48,7 +48,7 @@ def select_1(session: Session) -> None:
         )
 
 
-def select_2(session: Session) -> None:
+def select_2(session) -> None:
     """
     Query 2: students with the highest average for each subject
     """
@@ -92,7 +92,7 @@ def select_2(session: Session) -> None:
         )
 
 
-def select_3(session: Session) -> None:
+def select_3(session) -> None:
     """
     Found average mark on groups for each subject
     """
@@ -120,7 +120,7 @@ def select_3(session: Session) -> None:
         )
 
 
-def select_4(session: Session) -> None:
+def select_4(session) -> None:
     """
     Avarege mark for all students
     """
@@ -134,7 +134,7 @@ def select_4(session: Session) -> None:
         logging.info("Avarege mark: {:.2f}".format(mark.average_mark))
 
 
-def select_5(session: Session) -> None:
+def select_5(session) -> None:
     """
     Each teachers subjects
     """
@@ -160,7 +160,7 @@ def select_5(session: Session) -> None:
         )
 
 
-def select_6(session: Session, group_id: int) -> None:
+def select_6(session, group_id: int) -> None:
     """
     List students from given group
     """
@@ -180,7 +180,7 @@ def select_6(session: Session, group_id: int) -> None:
         )
 
 
-def select_7(session: Session, group_id: int, subject: str) -> None:
+def select_7(session, group_id: int, subject: str) -> None:
     """
     List students marks from given group and subject
     """
@@ -216,7 +216,7 @@ def select_7(session: Session, group_id: int, subject: str) -> None:
         )
 
 
-def select_8(session: Session) -> None:
+def select_8(session) -> None:
     """
     Average mark by each teacher
     """
@@ -243,7 +243,7 @@ def select_8(session: Session) -> None:
         )
 
 
-def select_9(session: Session, student_id: int) -> None:
+def select_9(session, student_id: int) -> None:
     """
     Given student subject list
     """
@@ -259,6 +259,7 @@ def select_9(session: Session, student_id: int) -> None:
         .join(Mark, Mark.student_id == Student.id)
         .join(Subject, Subject.id == Mark.subject_id)
         .filter(Student.id == student_id)
+        .group_by(Student.name, Student.surname, Subject.name)
     )
 
     students = session.execute(select_query).all()
@@ -270,7 +271,7 @@ def select_9(session: Session, student_id: int) -> None:
         )
 
 
-def select_10(session: Session, student_id: int, teacher_id: int) -> None:
+def select_10(session, student_id: int, teacher_id: int) -> None:
     """
     Given student subject list by teacher
     """
@@ -287,12 +288,16 @@ def select_10(session: Session, student_id: int, teacher_id: int) -> None:
         )
         .join(Mark, Mark.student_id == Student.id)
         .join(Subject, Subject.id == Mark.subject_id)
+        .join(Teacher, Teacher.id == Subject.teacher_id)
         .filter(Student.id == student_id)
         .filter(Subject.teacher_id == teacher_id)
+        .group_by(
+            Student.name, Student.surname, Subject.name, Teacher.name, Teacher.surname
+        )
     )
 
-    list = session.execute(select_query).all()
-    for i in list:
+    responce = session.execute(select_query).all()
+    for i in responce:
         logging.info(
             "Subject: {:<10} | Student: {:<15} {} | Teacher: {:<15} {:<15}".format(
                 i.subject_name,
@@ -302,24 +307,3 @@ def select_10(session: Session, student_id: int, teacher_id: int) -> None:
                 i.teacher_surname,
             )
         )
-
-
-def main() -> None:
-    """
-    Run all queries
-    """
-
-    select_1(session=session)
-    select_2(session=session)
-    select_3(session=session)
-    select_4(session=session)
-    select_5(session=session)
-    select_6(group_id=2, session=session)
-    select_7(group_id=1, subject="Biology", session=session)
-    select_8(session=session)
-    select_9(student_id=2, session=session)
-    select_10(student_id=1, teacher_id=1, session=session)
-
-
-if __name__ == "__main__":
-    main()
