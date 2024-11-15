@@ -158,7 +158,7 @@ def select_6(session, group_id: int) -> None:
     students = session.execute(students_query).all()
     logger.info("Group id: %s", group_id)
     for student in students:
-        logger.info("{:<15} {:<15}".format(student.student_name))
+        logger.info("{:<15}".format(student.student_name))
 
 
 def select_7(session, group_id: int, subject: str) -> None:

@@ -77,6 +77,7 @@ def run_migrations():
         logger.info("Migrations applied successfully")
     else:
         logger.error("Migration failed: %s", result.stderr.decode())
+        sys.exit(1)
 
 
 def generate_fixtures():
