@@ -30,7 +30,7 @@ def seed():
         subjects = []
 
         for _ in range(3):
-            teacher = Teacher(name=fake.first_name(), surname=fake.last_name())
+            teacher = Teacher(name=f"{fake.first_name()} {fake.last_name()}")
             session.add(teacher)
             session.commit()
             teachers.append(teacher)
@@ -43,8 +43,7 @@ def seed():
 
         for _ in range(10):
             student = Student(
-                name=fake.first_name(),
-                surname=fake.last_name(),
+                name=f"{fake.first_name()} {fake.last_name()}",
                 group_id=group.id,
             )
             session.add(student)

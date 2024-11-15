@@ -28,7 +28,6 @@ class Student(Base):
     __tablename__ = "student"
     id = mapped_column(Integer, primary_key=True, nullable=False, autoincrement=True)
     name = mapped_column(String, nullable=False)
-    surname = mapped_column(String, nullable=False)
     group_id = mapped_column(
         Integer, ForeignKey("group.id", ondelete="CASCADE"), nullable=False
     )
@@ -55,7 +54,6 @@ class Teacher(Base):
     __tablename__ = "teacher"
     id = mapped_column(Integer, primary_key=True, nullable=False, autoincrement=True)
     name = mapped_column(String, nullable=False)
-    surname = mapped_column(String, nullable=False)
     subject = relationship("Subject", back_populates="teacher")
 
 

@@ -25,21 +25,16 @@ def select_1(session) -> None:
         select(
             Student.id,
             Student.name,
-            Student.surname,
             func.avg(Mark.mark).label("average_mark"),
         )
         .join(Mark, Student.id == Mark.student_id)
-        .group_by(Student.id, Student.name, Student.surname)
+        .group_by(Student.id, Student.name)
         .order_by(func.avg(Mark.mark).desc())
         .limit(5)
     )
     top_students = session.execute(top_students_query).all()
     for student in top_students:
-        logger.info(
-            "{:<15} {:<15} | {:.2f} |".format(
-                student.name, student.surname, student.average_mark
-            )
-        )
+        logger.info("{:<15} | {:.2f} |".format(student.name, student.average_mark))
 
 
 def select_2(session) -> None:
@@ -66,7 +61,6 @@ def select_2(session) -> None:
             Subject.name.label("subject_name"),
             subquery.c.student_id,
             Student.name.label("student_name"),
-            Student.surname.label("student_surname"),
             subquery.c.average_mark,
         )
         .join(subquery, subquery.c.subject_id == Subject.id)
@@ -77,9 +71,8 @@ def select_2(session) -> None:
     top_students = session.execute(top_students_query).all()
     for student in top_students:
         logger.info(
-            "{:<15} {:<15} | {:.2f} | {:<12} |".format(
+            "{:<15} | {:.2f} | {:<12} |".format(
                 student.student_name,
-                student.student_surname,
                 student.average_mark,
                 student.subject_name,
             )
@@ -138,19 +131,16 @@ def select_5(session) -> None:
     teachers_query = (
         select(
             Teacher.name.label("teacher_name"),
-            Teacher.surname.label("teacher_surname"),
             Subject.name.label("subject_name"),
         )
         .join(Teacher, Teacher.id == Subject.teacher_id)
-        .group_by(Teacher.name, Teacher.surname, Subject.name)
+        .group_by(Teacher.name, Subject.name)
     )
 
     teachers = session.execute(teachers_query).all()
     for teacher in teachers:
         logger.info(
-            "{:<15} {:<15} | {:<15} |".format(
-                teacher.teacher_name, teacher.teacher_surname, teacher.subject_name
-            )
+            "{:<15} | {:<15} |".format(teacher.teacher_name, teacher.subject_name)
         )
 
 
@@ -163,15 +153,12 @@ def select_6(session, group_id: int) -> None:
     logger.info("Query 6: List students from given group")
     students_query = select(
         Student.name.label("student_name"),
-        Student.surname.label("student_surname"),
     ).filter(Student.group_id == group_id)
 
     students = session.execute(students_query).all()
     logger.info("Group id: %s", group_id)
     for student in students:
-        logger.info(
-            "{:<15} {:<15}".format(student.student_name, student.student_surname)
-        )
+        logger.info("{:<15} {:<15}".format(student.student_name))
 
 
 def select_7(session, group_id: int, subject: str) -> None:
@@ -189,7 +176,6 @@ def select_7(session, group_id: int, subject: str) -> None:
         (
             select(
                 Student.name.label("student_name"),
-                Student.surname.label("student_surname"),
                 Subject.name.label("subject_name"),
                 Mark.mark.label("mark"),
             )
@@ -205,9 +191,8 @@ def select_7(session, group_id: int, subject: str) -> None:
     logger.info("Subject: %s", subject)
     for student in students:
         logger.info(
-            "{:<15} {:<15} | {:<15} | {:<15}".format(
+            "{:<15} | {:<15} | {:<15}".format(
                 student.student_name,
-                student.student_surname,
                 student.subject_name,
                 student.mark,
             )
@@ -224,20 +209,17 @@ def select_8(session) -> None:
     select_query = (
         select(
             Teacher.name.label("teacher_name"),
-            Teacher.surname.label("teacher_surname"),
             func.avg(Mark.mark).label("average_mark"),
         )
         .join(Subject, Subject.teacher_id == Teacher.id)
         .join(Mark, Mark.subject_id == Subject.id)
-        .group_by(Teacher.name, Teacher.surname)
+        .group_by(Teacher.name)
     )
 
     teachers = session.execute(select_query).all()
     for teacher in teachers:
         logger.info(
-            "{:<15} {:<15} | {:.2f} |".format(
-                teacher.teacher_name, teacher.teacher_surname, teacher.average_mark
-            )
+            "{:<15} | {:.2f} |".format(teacher.teacher_name, teacher.average_mark)
         )
 
 
@@ -251,21 +233,18 @@ def select_9(session, student_id: int) -> None:
     select_query = (
         select(
             Student.name.label("student_name"),
-            Student.surname.label("student_surname"),
             Subject.name.label("subject_name"),
         )
         .join(Mark, Mark.student_id == Student.id)
         .join(Subject, Subject.id == Mark.subject_id)
         .filter(Student.id == student_id)
-        .group_by(Student.name, Student.surname, Subject.name)
+        .group_by(Student.name, Subject.name)
     )
 
     students = session.execute(select_query).all()
     for student in students:
         logger.info(
-            "{:<15} {:<15} | {:<15}".format(
-                student.student_name, student.student_surname, student.subject_name
-            )
+            "{:<15} | {:<15}".format(student.student_name, student.subject_name)
         )
 
 
@@ -283,29 +262,23 @@ def select_10(session, student_id: int, teacher_id: int) -> None:
     select_query = (
         select(
             Student.name.label("student_name"),
-            Student.surname.label("student_surname"),
             Subject.name.label("subject_name"),
             Teacher.name.label("teacher_name"),
-            Teacher.surname.label("teacher_surname"),
         )
         .join(Mark, Mark.student_id == Student.id)
         .join(Subject, Subject.id == Mark.subject_id)
         .join(Teacher, Teacher.id == Subject.teacher_id)
         .filter(Student.id == student_id)
         .filter(Subject.teacher_id == teacher_id)
-        .group_by(
-            Student.name, Student.surname, Subject.name, Teacher.name, Teacher.surname
-        )
+        .group_by(Student.name, Subject.name, Teacher.name)
     )
 
     responce = session.execute(select_query).all()
     for i in responce:
         logger.info(
-            "Subject: {:<10} | Student: {:<15} {} | Teacher: {:<15} {:<15}".format(
+            "Subject: {:<10} | Student: {:<15} | Teacher: {:<15}".format(
                 i.subject_name,
                 i.student_name,
-                i.student_surname,
                 i.teacher_name,
-                i.teacher_surname,
             )
         )
