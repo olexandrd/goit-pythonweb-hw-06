@@ -1,6 +1,8 @@
-from sqlalchemy import func, select, desc
+from sqlalchemy import func
+from sqlalchemy.orm.exc import UnmappedInstanceError
 from db_models import Group, Teacher, Student, Subject, Mark
 from logger_config import logger
+from error_handler import SQLError
 
 
 def create(session, **kwargs):
@@ -39,7 +41,7 @@ def create(session, **kwargs):
             mark=mark,
             student_id=student_id,
             subject_id=subject_id,
-            date=func.now(),
+            date=func.now(),  # [not-callable]
         )
         session.add(mark)
         session.commit()
@@ -50,7 +52,7 @@ def create(session, **kwargs):
 
 def list_(session, **kwargs):
     """
-    List records
+    List all records
     """
     model = kwargs.get("model")
     if model == "Student":
@@ -84,8 +86,89 @@ def list_(session, **kwargs):
 
 
 def update(session, **kwargs):
-    pass
+    """
+    Update a record
+    """
+    model = kwargs.get("model")
+    name = kwargs.get("name")
+    mark = kwargs.get("mark")
+    student_id = kwargs.get("student_id")
+    subject_id = kwargs.get("subject_id")
+    group_id = kwargs.get("group_id")
+    teacher_id = kwargs.get("teacher_id")
+    mark_id = kwargs.get("mark_id")
+    try:
+        if model == "Student":
+            student = session.query(Student).filter_by(id=student_id).first()
+            student.name = name
+            student.group_id = group_id
+            session.commit()
+            logger.info(f"Updated student: {name}")
+        elif model == "Teacher":
+            teacher = session.query(Teacher).filter_by(id=teacher_id).first()
+            teacher.name = name
+            session.commit()
+            logger.info(f"Updated teacher: {name}")
+        elif model == "Group":
+            group = session.query(Group).filter_by(id=group_id).first()
+            group.name = name
+            session.commit()
+            logger.info(f"Updated group: {name}")
+        elif model == "Subject":
+            subject = session.query(Subject).filter_by(id=subject_id).first()
+            subject.name = name
+            subject.teacher_id = teacher_id
+            session.commit()
+            logger.info(f"Updated subject: {name}")
+        elif model == "Mark":
+            mark = session.query(Mark).filter_by(id=mark_id).first()
+            mark.mark = mark
+            mark.student_id = student_id
+            mark.subject_id = subject_id
+            session.commit()
+            logger.info(f"Updated mark: {mark}")
+    except (AttributeError, UnmappedInstanceError):
+        logger.error("Record not found")
+        session.rollback()
 
 
 def remove(session, **kwargs):
-    pass
+    """
+    Remove a record
+    """
+    model = kwargs.get("model")
+    mark = kwargs.get("mark")
+    student_id = kwargs.get("student_id")
+    subject_id = kwargs.get("subject_id")
+    group_id = kwargs.get("group_id")
+    teacher_id = kwargs.get("teacher_id")
+    mark_id = kwargs.get("mark_id")
+    try:
+        if model == "Student":
+            student = session.query(Student).filter_by(id=student_id).first()
+            session.delete(student)
+            session.commit()
+            logger.info(f"Deleted student: {student.name}")
+        elif model == "Teacher":
+            teacher = session.query(Teacher).filter_by(id=teacher_id).first()
+            session.delete(teacher)
+            session.commit()
+            logger.info(f"Deleted teacher: {teacher.name}")
+        elif model == "Group":
+            group = session.query(Group).filter_by(id=group_id).first()
+            session.delete(group)
+            session.commit()
+            logger.info(f"Deleted group: {group.name}")
+        elif model == "Subject":
+            subject = session.query(Subject).filter_by(id=subject_id).first()
+            session.delete(subject)
+            session.commit()
+            logger.info(f"Deleted subject: {subject.name}")
+        elif model == "Mark":
+            mark = session.query(Mark).filter_by(id=mark_id).first()
+            session.delete(mark)
+            session.commit()
+            logger.info(f"Deleted mark: {mark.mark}")
+    except (AttributeError, UnmappedInstanceError):
+        logger.error("Record not found")
+        session.rollback()

@@ -32,7 +32,7 @@ class Student(Base):
         Integer, ForeignKey("group.id", ondelete="CASCADE"), nullable=False
     )
     group = relationship("Group", back_populates="student")
-    mark = relationship("Mark", back_populates="student")
+    mark = relationship("Mark", back_populates="student", cascade="all, delete-orphan")
 
 
 class Group(Base):
@@ -43,7 +43,9 @@ class Group(Base):
     __tablename__ = "group"
     id = mapped_column(Integer, primary_key=True, nullable=False, autoincrement=True)
     name = mapped_column(String, nullable=False)
-    student = relationship("Student", back_populates="group")
+    student = relationship(
+        "Student", back_populates="group", cascade="all, delete-orphan"
+    )
 
 
 class Teacher(Base):
@@ -68,8 +70,11 @@ class Subject(Base):
     teacher_id = mapped_column(
         Integer, ForeignKey("teacher.id", ondelete="CASCADE"), nullable=False
     )
-    teacher = relationship("Teacher", back_populates="subject")
-    mark = relationship("Mark", back_populates="subject")
+    teacher = relationship(
+        "Teacher",
+        back_populates="subject",
+    )
+    mark = relationship("Mark", back_populates="subject", cascade="all, delete-orphan")
 
 
 class Mark(Base):
@@ -88,4 +93,6 @@ class Mark(Base):
     mark = mapped_column(Integer, nullable=False)
     student = relationship("Student", back_populates="mark")
     subject = relationship("Subject", back_populates="mark")
-    date = mapped_column(DateTime, default=func.now, nullable=False)
+    date = mapped_column(
+        DateTime, default=func.now(), nullable=False, server_default=func.now()
+    )

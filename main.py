@@ -52,12 +52,15 @@ parser.add_argument("--student-id", type=int, help="Specify the student ID.")
 parser.add_argument("--subject-id", type=int, help="Specify the subject ID.")
 parser.add_argument("--teacher-id", type=int, help="Specify the teacher ID.")
 parser.add_argument(
-    "--name", type=str, help="Specify the name for create or update operations."
+    "-n", "--name", type=str, help="Specify the name for create or update operations."
 )
 parser.add_argument("--mark", type=int, help="Specify the mark.")
 parser.add_argument("--fixtures", help="Generate fixtures", action="store_true")
-parser.add_argument("--no-migrate", help="Do not run migrations", action="store_true")
+parser.add_argument("--migrate", help="Do not run migrations", action="store_true")
 parser.add_argument("--queries", help="Run predefined queries", action="store_true")
+parser.add_argument(
+    "--setup", help="Run migration and seed database", action="store_true"
+)
 args = parser.parse_args()
 validate_args(args)
 
@@ -137,16 +140,36 @@ def crud():
                 teacher_id=args.teacher_id,
             )
         elif args.action == "update":
-            update(s)
+            update(
+                s,
+                model=args.model,
+                name=args.name,
+                mark=args.mark,
+                student_id=args.student_id,
+                subject_id=args.subject_id,
+                group_id=args.group_id,
+                teacher_id=args.teacher_id,
+            )
         elif args.action == "remove":
-            remove(s)
+            remove(
+                s,
+                model=args.model,
+                mark=args.mark,
+                student_id=args.student_id,
+                subject_id=args.subject_id,
+                group_id=args.group_id,
+                teacher_id=args.teacher_id,
+            )
 
 
 def main():
     """
     Main entry point logic
     """
-    if not args.no_migrate:
+    if args.setup:
+        run_migrations()
+        generate_fixtures()
+    if args.migrate:
         run_migrations()
     if args.fixtures:
         generate_fixtures()
