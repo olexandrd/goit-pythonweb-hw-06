@@ -41,7 +41,7 @@ def create(session, **kwargs):
             mark=mark,
             student_id=student_id,
             subject_id=subject_id,
-            date=func.now(),  # [not-callable]
+            date=func.now(),  # pylint: disable=not-callable
         )
         session.add(mark)
         session.commit()

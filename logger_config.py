@@ -1,3 +1,7 @@
+"""
+Custom logger configuration
+"""
+
 import logging
 
 logger = logging.getLogger("app")

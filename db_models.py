@@ -94,5 +94,8 @@ class Mark(Base):
     student = relationship("Student", back_populates="mark")
     subject = relationship("Subject", back_populates="mark")
     date = mapped_column(
-        DateTime, default=func.now(), nullable=False, server_default=func.now()
+        DateTime,
+        default=func.now(),  # pylint: disable=not-callable
+        nullable=False,
+        server_default=func.now(),  # pylint: disable=not-callable
     )
